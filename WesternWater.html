@@ -1,0 +1,146 @@
+<html>
+  <head>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+    <title>KML Click Capture Sample</title>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.8/jquery.min.js"></script>
+    <style>
+      html, body {
+        /* height: 370px; */
+        padding: 0;
+        margin: 0;
+        }
+      #map {
+       height: 95%;
+       width: 95%;
+       overflow: hidden;
+       float: left;
+       border: thin solid #333;
+       }
+      #capture {
+       height: 10%;
+       width: 10%;
+       overflow: hidden;
+       float: left;
+       background-color: #ECECFB;
+       border: thin solid #333;
+       border-left: none;
+       }
+       #coordinate, #reversegeocode {
+        /* position:absolute;  */
+        font-size:2em; 
+        padding:10px;
+        z-index:888;
+        /* top:0px; */
+        /* left:0; */
+        opacity:0.8; 
+        width:40%; 
+        text-align:center;
+        border:1px #ccc solid;
+      }
+    </style>
+  </head>
+  <body>
+    <div>
+        <input type="text" id="coordinate" value="Latitude, Longitude"/>
+        <input type="text" style="float: right;" id="reversegeocode" value="Address"/>
+    </div>
+    <div id="map"></div>
+    
+    <script>
+      var map;
+      var src = 'https://www.westernwater.com.au/assets/build/site-default/images/WW-boundary-May-2018.kml';
+      var marker = null;
+      
+      const contentString =
+        '<div id="content">' +
+        '<div id="confirmLocation">' +
+        "</div>" +
+        '<h2 id="firstHeading" class="firstHeading">Confirm property location?</h2>' +
+        '<div id="bodyContent">' +
+        '<label id="propertyLocation">LOCATION</label><br /><br />' +
+        '<input id="confirmPropertyLocation" type="button" value="Confirm" onclick="updateAddress();"></input>' +
+        "</div>" +
+        "</div>";
+
+      function initMap() {
+        map = new google.maps.Map(document.getElementById('map'), {
+            zoom: 11,
+            center: { lat: -37.840935, lng: 144.946457 },
+            mapTypeId: google.maps.MapTypeId.ROADMAP,
+        });
+        const geocoder = new google.maps.Geocoder();
+        const infowindow = new google.maps.InfoWindow();
+        // const infowindow = new google.maps.InfoWindow({
+        //     content: contentString,
+        // });
+
+        map.addListener('click', function(event) {
+            clickHandler(event, "Outside KML");
+        });
+
+        var kmlLayer = new google.maps.KmlLayer(src, {
+          suppressInfoWindows: false,
+          preserveViewport: false,
+          map: map
+        });
+        kmlLayer.addListener('click', function(event) {
+          clickHandler(event, "WesternWater KML");
+        });
+
+        function clickHandler(event, kmlInfo) {
+          if (marker) { 
+            marker.setMap(null); 
+          }
+          $("#reversegeocode").val("");
+          geocodeLatLng(geocoder, map, infowindow, event, kmlInfo);
+        }
+      }
+
+      function geocodeLatLng(geocoder, map, infowindow, event, kmlInfo) {
+        var marker = null;
+        var input = event.latLng.lat() + ", " + event.latLng.lng(); //document.getElementById("coordinate").value;
+        var latlngStr = input.split(",", 2);
+        var latlng = {
+        lat: parseFloat(latlngStr[0]),
+        lng: parseFloat(latlngStr[1]),
+        };
+    
+        geocoder
+        .geocode({ location: latlng })
+        .then((response) => {
+            if (response.results[0]) {
+                // map.setZoom(11);
+                //delete the old marker
+                if (this.marker) { 
+                    this.marker.setMap(null); 
+                }
+                this.marker = new google.maps.Marker({
+                    position: latlng,
+                    map: map,
+                });
+                var formattedAddress = response.results[0].formatted_address;
+                $("#coordinate").val(input);
+                // $("#reversegeocode").val(formattedAddress);
+                //$("#propertyLocation").val(formattedAddress);
+                infowindow.setContent(contentString.replace(">LOCATION<", ">"+kmlInfo + " " + formattedAddress+"<"));
+                infowindow.open(map, this.marker);
+            } 
+            else {
+                window.alert("No results found");
+            }
+        })
+        .catch((e) => window.alert("Geocoder failed due to: " + e));
+    }
+
+    function updateAddress() {
+        var address = $("#propertyLocation")[0].outerText;
+        $("#reversegeocode").val(address);
+    }
+
+    </script>
+    <script async
+    src="https://maps.googleapis.com/maps/api/js?key=YOUR_KEY&callback=initMap">
+    </script>
+  </body>
+</html>

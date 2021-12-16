@@ -1,0 +1,21 @@
+Google Maps - Before you start
+1. Get API Key -> https://developers.google.com/maps/documentation/embed/get-api-key
+2. Give the API key permissions to:
+	- Maps JavaScript API
+	- Geocoding API
+
+Google Maps KML sample
+https://developers.google.com/maps/documentation/javascript/kml
+
+
+Google Maps InfoWindows
+
+https://developers.google.com/maps/documentation/javascript/infowindows
+https://jsfiddle.net/api/post/library/pure/
+
+
+Western Water Service Area Map 
+https://www.westernwater.com.au/service-area-map
+
+Western Water Service Area Map (KML)
+https://www.westernwater.com.au/assets/build/site-default/images/WW-boundary-May-2018.kml
